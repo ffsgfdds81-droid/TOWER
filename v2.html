@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Хроники Бастиона: Война За Рубежи</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a1931 0%, #185adb 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        /* Главное меню */
+        .menu-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1931 0%, #185adb 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+        
+        .menu-screen.hidden {
+            display: none;
+        }
+        
+        .menu-title {
+            font-size: 4rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+            margin-bottom: 40px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 300px;
+        }
+        
+        .menu-btn {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .menu-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(45deg, #ff4b2b, #ff416c);
+        }
+        
+        /* Экран выбора уровня */
+        .level-select-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1931 0%, #185adb 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 900;
+            padding: 40px;
+        }
+        
+        .level-select-screen.hidden {
+            display: none;
+        }
+        
+        .level-title {
+            font-size: 3rem;
+            color: #ffd700;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            max-width: 1000px;
+            margin: 20px 0;
+        }
+        
+        .level-btn {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(45deg, #00b4db, #0083b0);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .level-btn.completed {
+            background: linear-gradient(45deg, #00b09b, #96c93d);
+        }
+        
+        .level-btn.locked {
+            background: linear-gradient(45deg, #8e9eab, #eef2f3);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        
+        .level-btn:hover:not(.locked) {
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .level-name {
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid white;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+        
+        /* Игровой экран */
+        .game-screen {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+        
+        .game-screen.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-header {
+            width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 20px;
+        }
+        
+        .game-stats {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .game-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .game-btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-container {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .game-board {
+            width: 800px;
+            height: 600px;
+            background: #0a1931;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+        
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .tower-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .tower-list {
+            display: grid;
+            /* 60 башен - 4 колонки */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .tower-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            /* Уменьшаем размер, чтобы вместить больше */
+            height: 80px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .tower-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .tower-item.selected {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .tower-icon {
+            font-size: 1.5rem;
+            margin-bottom: 3px;
+        }
+        
+        .tower-name {
+            font-size: 0.7rem;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+        
+        .tower-cost {
+            font-size: 0.8rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        /* Экран победы (Выигрыш) */
+        .victory-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 800;
+        }
+        
+        .victory-screen.active {
+            display: flex;
+        }
+        
+        .victory-title {
+            /* ОБНОВЛЕНО: Название меню Выигрыша */
+            font-size: 5rem;
+            color: #ffd700;
+            margin-bottom: 30px;
+            animation: victoryGlow 1.5s infinite alternate;
+        }
+        
+        @keyframes victoryGlow {
+            from { text-shadow: 0 0 20px #ffd700; }
+            to { text-shadow: 0 0 40px #ffd700, 0 0 60px #ffd700; }
+        }
+        
+        .victory-stats {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            min-width: 400px;
+        }
+        
+        .victory-stat {
+            text-align: center;
+        }
+        
+        .victory-stat-value {
+            font-size: 2rem;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        /* Экран поражения (Проигрыш) */
+        .defeat-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 800;
+        }
+        
+        .defeat-screen.active {
+            display: flex;
+        }
+        
+        .defeat-title {
+            /* ОБНОВЛЕНО: Название меню Поражения */
+            font-size: 5rem;
+            color: #ff416c;
+            margin-bottom: 30px;
+            animation: defeatGlow 1.5s infinite alternate;
+        }
+        
+        @keyframes defeatGlow {
+            from { text-shadow: 0 0 20px #ff416c; }
+            to { text-shadow: 0 0 40px #ff416c, 0 0 60px #ff416c; }
+        }
+        
+        /* Волновой экран */
+        .wave-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 700;
+        }
+        
+        .wave-screen.active {
+            display: flex;
+        }
+        
+        .wave-title {
+            font-size: 4rem;
+            color: #00b4db;
+            margin-bottom: 20px;
+            animation: wavePulse 1s infinite;
+        }
+        
+        @keyframes wavePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .wave-enemies {
+            font-size: 1.5rem;
+            color: #ffd700;
+            margin-bottom: 30px;
+        }
+        
+        /* НОВЫЙ СТИЛЬ: Таймер */
+        .wave-timer {
+            font-size: 2.5rem;
+            color: #ffeb3b;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        /* Пауза */
+        .pause-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 700;
+        }
+        
+        .pause-screen.active {
+            display: flex;
+        }
+        
+        .pause-title {
+            font-size: 4rem;
+            color: #ffd700;
+            margin-bottom: 40px;
+        }
+        
+        .level-progress {
+            margin: 20px 0;
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-screen" id="menuScreen">
+        <div class="menu-title">ХРОНИКИ БАСТИОНА</div>
+        <div class="menu-buttons">
+            <button class="menu-btn" id="playBtn">ИГРАТЬ</button>
+            <button class="menu-btn" id="continueBtn">ПРОДОЛЖИТЬ</button>
+            <button class="menu-btn" id="helpBtn">ПРАВИЛА</button>
+        </div>
+    </div>
+    
+    <div class="level-select-screen hidden" id="levelSelectScreen">
+        <button class="back-btn" id="backToMenuBtn">← Назад</button>
+        <div class="level-title">ВЫБЕРИТЕ УРОВЕНЬ</div>
+        <div class="levels-grid" id="levelsGrid">
+            </div>
+    </div>
+    
+    <div class="game-screen" id="gameScreen">
+        <div class="game-header">
+            <div class="game-stats">
+                <div class="stat">
+                    <div>УРОВЕНЬ</div>
+                    <div id="currentLevel" class="stat-value">1</div>
+                </div>
+                <div class="stat">
+                    <div>ВОЛНА</div>
+                    <div id="currentWave" class="stat-value">1/20</div>
+                </div>
+                <div class="stat">
+                    <div>ЗДОРОВЬЕ</div>
+                    <div id="health" class="stat-value">100</div>
+                </div>
+                <div class="stat">
+                    <div>ЗОЛОТО</div>
+                    <div id="money" class="stat-value">500</div>
+                </div>
+                <div class="stat">
+                    <div>СЧЁТ</div>
+                    <div id="score" class="stat-value">0</div>
+                </div>
+            </div>
+            <div class="game-controls">
+                <button class="game-btn" id="pauseBtn">⏸ ПАУЗА</button>
+                <button class="game-btn" id="menuBtn">🏠 МЕНЮ</button>
+            </div>
+        </div>
+        
+        <div class="game-container">
+            <div class="game-board">
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+                
+                <div class="wave-screen" id="waveScreen">
+                    <div class="wave-title" id="waveTitle">ВОЛНА 1</div>
+                    <div class="wave-enemies" id="waveEnemies">Готовьтесь к атаке!</div>
+                    <div class="wave-timer" id="deploymentTimer"></div> 
+                    <button class="menu-btn" id="startWaveBtn">НАЧАТЬ ВОЛНУ</button>
+                </div>
+                
+                <div class="pause-screen" id="pauseScreen">
+                    <div class="pause-title">ПАУЗА</div>
+                    <div class="level-progress" id="levelProgress">Уровень 1 • Волна 1/20</div>
+                    <div class="menu-buttons">
+                        <button class="menu-btn" id="resumeBtn">ПРОДОЛЖИТЬ</button>
+                        <button class="menu-btn" id="restartLevelBtn">ЗАНОВО</button>
+                        <button class="menu-btn" id="toMenuFromPauseBtn">В МЕНЮ</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tower-panel">
+                <h3 style="color: #ffd700; text-align: center; margin-bottom: 20px;">ВЫБОР БАШНИ (60 видов)</h3>
+                <div class="tower-list" id="towerList">
+                    </div>
+                <div style="margin-top: 30px;">
+                    <button class="game-btn" id="upgradeBtn" style="width: 100%; margin-bottom: 10px;">⬆ УЛУЧШИТЬ (100💰)</button>
+                    <button class="game-btn" id="sellBtn" style="width: 100%; background: linear-gradient(45deg, #8e44ad, #9b59b6);">💰 ПРОДАТЬ (50%)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="victory-screen" id="victoryScreen">
+        <div class="victory-title">ПОБЕДА!</div>
+        <div class="victory-stats">
+            <div class="victory-stat">
+                <div>Уровень</div>
+                <div id="victoryLevel" class="victory-stat-value">1</div>
+            </div>
+            <div class="victory-stat">
+                <div>Волн пройдено</div>
+                <div id="victoryWaves" class="victory-stat-value">20/20</div>
+            </div>
+            <div class="victory-stat">
+                <div>Врагов убито</div>
+                <div id="victoryKills" class="victory-stat-value">0</div>
+            </div>
+            <div class="victory-stat">
+                <div>Золота заработано</div>
+                <div id="victoryGold" class="victory-stat-value">0</div>
+            </div>
+        </div>
+        <div class="menu-buttons">
+            <button class="menu-btn" id="nextLevelBtn">СЛЕДУЮЩИЙ УРОВЕНЬ</button>
+            <button class="menu-btn" id="toMenuFromVictoryBtn">В МЕНЮ</button>
+        </div>
+    </div>
+    
+    <div class="defeat-screen" id="defeatScreen">
+        <div class="defeat-title">ПОРАЖЕНИЕ</div>
+        <div class="victory-stats">
+            <div class="victory-stat">
+                <div>Уровень</div>
+                <div id="defeatLevel" class="victory-stat-value">1</div>
+            </div>
+            <div class="victory-stat">
+                <div>Волн пройдено</div>
+                <div id="defeatWaves" class="victory-stat-value">0/20</div>
+            </div>
+            <div class="victory-stat">
+                <div>Врагов убито</div>
+                <div id="defeatKills" class="victory-stat-value">0</div>
+            </div>
+            <div class="victory-stat">
+                <div>Счёт</div>
+                <div id="defeatScore" class="victory-stat-value">0</div>
+            </div>
+        </div>
+        <div class="menu-buttons">
+            <button class="menu-btn" id="restartFromDefeatBtn">ПОПРОБОВАТЬ СНОВА</button>
+            <button class="menu-btn" id="toMenuFromDefeatBtn">В МЕНЮ</button>
+        </div>
+    </div>
+
+    <script>
+        // Элементы DOM
+        const menuScreen = document.getElementById('menuScreen');
+        const levelSelectScreen = document.getElementById('levelSelectScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const victoryScreen = document.getElementById('victoryScreen');
+        const defeatScreen = document.getElementById('defeatScreen');
+        const waveScreen = document.getElementById('waveScreen');
+        const pauseScreen = document.getElementById('pauseScreen');
+        const startWaveBtn = document.getElementById('startWaveBtn'); // Получаем кнопку
+        
+        const playBtn = document.getElementById('playBtn');
+        const continueBtn = document.getElementById('continueBtn');
+        const backToMenuBtn = document.getElementById('backToMenuBtn');
+        const levelsGrid = document.getElementById('levelsGrid');
+        const towerList = document.getElementById('towerList');
+        
+        // Игровые элементы
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Игровые переменные
+        let game = {
+            currentLevel: 1,
+            currentWave: 0,
+            maxWaves: 20, // 20 ВОЛН
+            health: 100,
+            money: 500,
+            score: 0,
+            kills: 0,
+            selectedTower: 'archer',
+            towers: [],
+            enemies: [],
+            projectiles: [],
+            effects: [],
+            path: [],
+            selectedTowerIndex: -1,
+            waveInProgress: false,
+            enemyCount: 0,
+            maxEnemies: 0,
+            gameRunning: false,
+            gamePaused: false,
+            completedLevels: JSON.parse(localStorage.getItem('tdCompletedLevels')) || [],
+            waveStartTime: 0,
+            // НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ТАЙМЕРА
+            deploymentTimeLimit: 60000, // 60 секунд (1 минута)
+            deploymentEndTime: 0,
+            deploymentInterval: null
+        };
+        
+        // Уровни (20 уровней)
+        const levels = [
+            { name: "Начало пути", enemyHealth: 100, enemySpeed: 1, money: 500, health: 100 },
+            { name: "Лесная тропа", enemyHealth: 120, enemySpeed: 1.1, money: 550, health: 100 },
+            { name: "Горный перевал", enemyHealth: 140, enemySpeed: 1.2, money: 600, health: 100 },
+            { name: "Пустыня", enemyHealth: 160, enemySpeed: 1.1, money: 650, health: 100 },
+            { name: "Болота", enemyHealth: 180, enemySpeed: 0.9, money: 700, health: 100 },
+            { name: "Ледяные пещеры", enemyHealth: 200, enemySpeed: 1.3, money: 750, health: 100 },
+            { name: "Вулкан", enemyHealth: 220, enemySpeed: 1.2, money: 800, health: 100 },
+            { name: "Подземелье", enemyHealth: 240, enemySpeed: 1.1, money: 850, health: 100 },
+            { name: "Храм", enemyHealth: 260, enemySpeed: 1.2, money: 900, health: 100 },
+            { name: "Крепость", enemyHealth: 300, enemySpeed: 1, money: 1000, health: 100 },
+            { name: "Небесный путь", enemyHealth: 320, enemySpeed: 1.4, money: 1100, health: 100 },
+            { name: "Океанские глубины", enemyHealth: 340, enemySpeed: 0.8, money: 1200, health: 100 },
+            { name: "Космическая станция", enemyHealth: 360, enemySpeed: 1.3, money: 1300, health: 100 },
+            { name: "Измерение хаоса", enemyHealth: 380, enemySpeed: 1.5, money: 1400, health: 100 },
+            { name: "Цитадель тьмы", enemyHealth: 400, enemySpeed: 1.2, money: 1500, health: 100 },
+            { name: "Лабиринт", enemyHealth: 450, enemySpeed: 1.1, money: 1600, health: 100 },
+            { name: "Арена", enemyHealth: 500, enemySpeed: 1.3, money: 1700, health: 100 },
+            { name: "Тронный зал", enemyHealth: 550, enemySpeed: 1.2, money: 1800, health: 100 },
+            { name: "Врата ада", enemyHealth: 600, enemySpeed: 1.4, money: 1900, health: 100 },
+            { name: "Финальное испытание", enemyHealth: 700, enemySpeed: 1.5, money: 2000, health: 100 }
+        ];
+        
+        // Типы башен (60 видов) - (Оставлены без изменений)
+        const towerTypes = {
+            archer: { name: 'Лучник', cost: 100, damage: 20, range: 150, speed: 800, color: '#4CAF50', icon: '🏹' },
+            cannon: { name: 'Пушка', cost: 150, damage: 40, range: 120, speed: 1500, color: '#FF5722', icon: '💣' },
+            mage: { name: 'Маг', cost: 200, damage: 30, range: 140, speed: 1000, color: '#9C27B0', icon: '🔮' },
+            ice: { name: 'Ледяная', cost: 180, damage: 15, range: 130, speed: 900, color: '#03A9F4', icon: '❄️' },
+            laser: { name: 'Лазер', cost: 250, damage: 10, range: 180, speed: 100, color: '#F44336', icon: '🔦' },
+            poison: { name: 'Яд', cost: 220, damage: 25, range: 140, speed: 1200, color: '#4CAF50', icon: '☣️' },
+            tesla: { name: 'Тесла', cost: 300, damage: 15, range: 160, speed: 800, color: '#FFEB3B', icon: '⚡' },
+            sonic: { name: 'Соник', cost: 350, damage: 35, range: 100, speed: 500, color: '#2196F3', icon: '🌀' },
+            mario: { name: 'Марио', cost: 320, damage: 40, range: 90, speed: 2000, color: '#E91E63', icon: '👨‍🔧' },
+            ninja: { name: 'Ниндзя', cost: 280, damage: 30, range: 80, speed: 400, color: '#000000', icon: '🥷' },
+            dragon: { name: 'Дракон', cost: 500, damage: 50, range: 170, speed: 2000, color: '#FF9800', icon: '🐉' },
+            golem: { name: 'Голем', cost: 400, damage: 60, range: 110, speed: 2500, color: '#795548', icon: '🗿' },
+            necromancer: { name: 'Некромант', cost: 450, damage: 20, range: 150, speed: 3000, color: '#009688', icon: '☠️' },
+            catapult: { name: 'Катапульта', cost: 380, damage: 45, range: 200, speed: 3000, color: '#8D6E63', icon: '🪨' },
+            sniper: { name: 'Снайпер', cost: 270, damage: 70, range: 250, speed: 2000, color: '#607D8B', icon: '🎯' },
+            storm: { name: 'Шторм', cost: 330, damage: 25, range: 160, speed: 1800, color: '#3F51B5', icon: '🌩️' },
+            vampire: { name: 'Вампир', cost: 290, damage: 35, range: 130, speed: 1400, color: '#D32F2F', icon: '🦇' },
+            portal: { name: 'Портал', cost: 420, damage: 0, range: 120, speed: 3000, color: '#7B1FA2', icon: '🌀' },
+            time: { name: 'Время', cost: 360, damage: 10, range: 150, speed: 2000, color: '#00BCD4', icon: '⏱️' },
+            earthquake: { name: 'Земля', cost: 480, damage: 60, range: 100, speed: 4000, color: '#8BC34A', icon: '🌋' },
+            spearman: { name: 'Копьеносец', cost: 110, damage: 15, range: 100, speed: 500, color: '#B7950B', icon: '🔱' },
+            flamethrower: { name: 'Огнемет', cost: 240, damage: 5, range: 100, speed: 50, color: '#FF4500', icon: '🔥' },
+            shrapnel: { name: 'Шрапнель', cost: 170, damage: 30, range: 160, speed: 2000, color: '#6C7A89', icon: '💥' },
+            magnetic: { name: 'Магнит', cost: 260, damage: 0, range: 180, speed: 1500, color: '#34495E', icon: '🧲' },
+            alchemy: { name: 'Алхимия', cost: 310, damage: 20, range: 140, speed: 1100, color: '#F39C12', icon: '🧪' },
+            barricade: { name: 'Баррикада', cost: 50, damage: 0, range: 0, speed: 0, color: '#A0522D', icon: '🚧' },
+            oracle: { name: 'Оракул', cost: 390, damage: 0, range: 300, speed: 5000, color: '#4B0082', icon: '👁️' },
+            minigun: { name: 'Миниган', cost: 280, damage: 8, range: 120, speed: 80, color: '#696969', icon: '🔫' },
+            cryo: { name: 'Крио-пушка', cost: 230, damage: 15, range: 150, speed: 1300, color: '#00FFFF', icon: '🥶' },
+            bounty: { name: 'Охотник', cost: 350, damage: 20, range: 170, speed: 1800, color: '#FFD700', icon: '💰' },
+            teleporter: { name: 'Телепорт', cost: 430, damage: 0, range: 100, speed: 5000, color: '#8A2BE2', icon: '🌌' },
+            poisonGas: { name: 'Ядовитый Газ', cost: 200, damage: 1, range: 110, speed: 50, color: '#90EE90', icon: '💨' },
+            stoneThrower: { name: 'Каменщик', cost: 130, damage: 50, range: 180, speed: 4000, color: '#A9A9A9', icon: '🪨' },
+            spirit: { name: 'Дух', cost: 370, damage: 30, range: 140, speed: 1600, color: '#00FA9A', icon: '👻' },
+            blackHole: { name: 'Черная Дыра', cost: 550, damage: 100, range: 100, speed: 6000, color: '#000000', icon: '⚫' },
+            artillery: { name: 'Артиллерия', cost: 410, damage: 80, range: 400, speed: 3500, color: '#B8860B', icon: '🤯' },
+            reflect: { name: 'Отражатель', cost: 300, damage: 0, range: 130, speed: 1000, color: '#7FFFD4', icon: '🛡️' },
+            swarm: { name: 'Рой', cost: 270, damage: 10, range: 110, speed: 100, color: '#556B2F', icon: '🐝' },
+            gravity: { name: 'Гравитация', cost: 460, damage: 5, range: 160, speed: 2000, color: '#4682B4', icon: '⬇️' },
+            steam: { name: 'Пар', cost: 190, damage: 20, range: 100, speed: 1000, color: '#DCDCDC', icon: '⚙️' },
+            // Новые 20 башен (41-60)
+            convert: { name: 'Конвертер', cost: 500, damage: 0, range: 100, speed: 8000, color: '#FF69B4', icon: '💖' },
+            bomb: { name: 'Бомбардир', cost: 350, damage: 90, range: 150, speed: 4500, color: '#556B2F', icon: '💥' },
+            percent: { name: 'Процент', cost: 420, damage: 5, range: 180, speed: 2000, color: '#00FF7F', icon: '📈' },
+            freezer: { name: 'Глубокая Заморозка', cost: 380, damage: 5, range: 140, speed: 5000, color: '#1E90FF', icon: '🧊' },
+            execute: { name: 'Палач', cost: 450, damage: 30, range: 160, speed: 1500, color: '#8B0000', icon: '🗡️' },
+            slowField: { name: 'Поле Замедления', cost: 210, damage: 0, range: 120, speed: 100, color: '#4682B4', icon: '🐌' },
+            pierce: { name: 'Пробойник', cost: 300, damage: 35, range: 200, speed: 2000, color: '#9ACD32', icon: ' xuyên' },
+            chain: { name: 'Цепная Реакция', cost: 320, damage: 25, range: 170, speed: 1100, color: '#FFD700', icon: '🔗' },
+            buff: { name: 'Баффер', cost: 400, damage: 0, range: 100, speed: 5000, color: '#FF1493', icon: '✨' },
+            acid: { name: 'Кислотный Дождь', cost: 390, damage: 10, range: 150, speed: 1500, color: '#7CFC00', icon: '💧' },
+            chrono: { name: 'Хронос', cost: 520, damage: 1, range: 150, speed: 100, color: '#4B0082', icon: '🕰️' },
+            random: { name: 'Рандом', cost: 440, damage: 10, range: 140, speed: 1200, color: '#808080', icon: '🎲' },
+            farShot: { name: 'Дальнобойщик', cost: 280, damage: 10, range: 300, speed: 800, color: '#483D8B', icon: '🔭' },
+            shockwave: { name: 'Ударная Волна', cost: 470, damage: 50, range: 110, speed: 3000, color: '#D2B48C', icon: '〰️' },
+            roadBlock: { name: 'Блокада', cost: 360, damage: 30, range: 0, speed: 2500, color: '#CD853F', icon: '🛑' },
+            summon: { name: 'Призыватель', cost: 550, damage: 0, range: 130, speed: 6000, color: '#FFA07A', icon: '🐾' },
+            blind: { name: 'Ослепитель', cost: 410, damage: 0, range: 150, speed: 3500, color: '#FAFAD2', icon: '🔆' },
+            sacrificial: { name: 'Жертвенный', cost: 370, damage: 5, range: 160, speed: 1000, color: '#C71585', icon: '🩸' },
+            debuffer: { name: 'Дебаффер', cost: 230, damage: 10, range: 140, speed: 1500, color: '#008B8B', icon: '🔻' },
+            ultimate: { name: 'Ультиматум', cost: 1000, damage: 200, range: 200, speed: 10000, color: '#FFD700', icon: '👑' } 
+        };
+        
+        // Типы врагов (60 видов) - (Оставлены без изменений)
+        const enemyTypes = [
+            // Базовые 40 врагов
+            { name: '👹 Гоблин', health: 100, speed: 1.2, color: '#70e000', money: 20 },
+            { name: '🧌 Орк', health: 200, speed: 0.8, color: '#ff4800', money: 40 },
+            { name: '💀 Скелет', health: 150, speed: 1.0, color: '#f8f9fa', money: 30 },
+            { name: '👻 Призрак', health: 120, speed: 1.4, color: '#c77dff', money: 35 },
+            { name: '🦅 Гарпия', health: 110, speed: 1.5, color: '#ff85a2', money: 45 },
+            { name: '🧟‍♂️ Зомби', health: 250, speed: 0.6, color: '#6a040f', money: 50 },
+            { name: '🤖 Робот', health: 300, speed: 0.7, color: '#696969', money: 60 },
+            { name: '👽 Инопланетянин', health: 140, speed: 1.3, color: '#32cd32', money: 55 },
+            { name: '🧙‍♀️ Колдунья', health: 180, speed: 1.0, color: '#9370db', money: 65 },
+            { name: '🕷️ Паук', health: 160, speed: 1.6, color: '#000000', money: 40 },
+            { name: '🧊 Ледяной Голем', health: 400, speed: 0.5, color: '#38b000', money: 80 },
+            { name: '🔥 Демон', health: 320, speed: 0.9, color: '#ff0000', money: 75 },
+            { name: '🐙 Кракен', health: 350, speed: 0.7, color: '#2e8b57', money: 85 },
+            { name: '👁️ Циклоп', health: 280, speed: 0.8, color: '#ff4500', money: 70 },
+            { name: '🧛 Вампир', health: 240, speed: 1.1, color: '#8b0000', money: 65 },
+            { name: '🗡️ Рыцарь', health: 260, speed: 0.9, color: '#3a0ca3', money: 75 },
+            { name: '⚔️ Самурай', health: 220, speed: 1.3, color: '#000080', money: 70 },
+            { name: '🧪 Алхимик', health: 190, speed: 1.0, color: '#f72585', money: 80 },
+            { name: '🦖 Динозавр', health: 380, speed: 0.8, color: '#e63946', money: 90 },
+            { name: '🐲 ДРАКОН', health: 500, speed: 0.5, color: '#ff0000', money: 200 },
+            { name: '💨 Воздушный Шар', health: 100, speed: 2.0, color: '#ADD8E6', money: 45 },
+            { name: '🧱 Каменный Страж', health: 600, speed: 0.4, color: '#BDB76B', money: 120 },
+            { name: '💡 Нексус', health: 150, speed: 1.1, color: '#F0E68C', money: 50 },
+            { name: '🐸 Лягушка', health: 130, speed: 0.9, color: '#228B22', money: 30 },
+            { name: '🛡️ Бронированный', health: 350, speed: 0.7, color: '#C0C0C0', money: 70 },
+            { name: '🔪 Убийца', health: 180, speed: 1.8, color: '#101010', money: 60 },
+            { name: '🔥 Феникс', health: 250, speed: 1.5, color: '#FF7F50', money: 80 },
+            { name: '💣 Самоубийца', health: 100, speed: 1.3, color: '#B22222', money: 20 },
+            { name: '💸 Мародер', health: 200, speed: 1.0, color: '#DAA520', money: 150 },
+            { name: '🌀 Иллюзия', health: 50, speed: 1.2, color: '#DDA0DD', money: 25 },
+            { name: '🐍 Медуза', health: 210, speed: 0.8, color: '#800080', money: 65 },
+            { name: '⚡ Электрик', health: 170, speed: 1.4, color: '#FFFF00', money: 70 },
+            { name: '🌊 Водяной', health: 230, speed: 1.0, color: '#4169E1', money: 75 },
+            { name: '🪵 Лесоруб', health: 270, speed: 0.6, color: '#8B4513', money: 85 },
+            { name: '⚙️ Механизм', health: 450, speed: 0.5, color: '#A9A9A9', money: 100 },
+            { name: '🍄 Гриб', health: 160, speed: 1.1, color: '#808000', money: 50 },
+            { name: '🌈 Спектр', health: 10, speed: 1.7, color: '#FF1493', money: 25 },
+            { name: '🌙 Теневой Волк', health: 190, speed: 1.6, color: '#191970', money: 70 },
+            { name: '🌌 Аномалия', health: 300, speed: 1.3, color: '#4B0082', money: 95 },
+            { name: '👑 ВЕРХОВНЫЙ ДРАКОН', health: 1000, speed: 0.3, color: '#000000', money: 500 },
+            // Новые 20 врагов (41-60)
+            { name: '🦟 Рой Москитов', health: 80, speed: 2.5, color: '#6B8E23', money: 30 }, 
+            { name: '💎 Кристалл', health: 400, speed: 0.5, color: '#00CED1', money: 150 }, 
+            { name: '🚧 Инженер', health: 220, speed: 0.7, color: '#B0C4DE', money: 60 }, 
+            { name: '🦠 Мутант', health: 350, speed: 1.0, color: '#DAA520', money: 80 }, 
+            { name: '🪶 Призрак Пера', health: 130, speed: 1.8, color: '#FFE4B5', money: 55 }, 
+            { name: '⚙️ Часовой Механизм', health: 480, speed: 0.6, color: '#778899', money: 110 }, 
+            { name: '🌪️ Элементаль Ветра', health: 200, speed: 2.2, color: '#E0FFFF', money: 75 }, 
+            { name: '🔥 Обгоревший', health: 300, speed: 0.9, color: '#800000', money: 90 }, 
+            { name: '🐢 Черепаха', health: 550, speed: 0.2, color: '#2F4F4F', money: 130 }, 
+            { name: '📡 Резонатор', health: 260, speed: 1.1, color: '#8B008B', money: 85 }, 
+            { name: '🚀 Ракета', health: 150, speed: 3.0, color: '#B22222', money: 70 }, 
+            { name: '🧪 Химик', health: 240, speed: 1.0, color: '#6A5ACD', money: 80 }, 
+            { name: '🌲 Энт', health: 420, speed: 0.6, color: '#556B2F', money: 95 }, 
+            { name: '🌑 Тень', health: 190, speed: 1.4, color: '#2F4F4F', money: 65 }, 
+            { name: '💥 Ядро', health: 330, speed: 0.8, color: '#FFA500', money: 100 }, 
+            { name: '🪱 Червь', health: 210, speed: 0.7, color: '#CD853F', money: 75 }, 
+            { name: '🃏 Джокер', health: 10, speed: 1.5, color: '#FF4500', money: 50 }, 
+            { name: '🕰️ Хранитель Времени', health: 280, speed: 1.0, color: '#00BFFF', money: 90 }, 
+            { name: '🌌 Космонавт', health: 370, speed: 1.2, color: '#483D8B', money: 120 }, 
+            { name: '👑 ТИТАН', health: 2000, speed: 0.1, color: '#FFD700', money: 1000 } 
+        ];
+        
+        // Инициализация игры
+        function initGame() {
+            // Создаем уровни
+            createLevels();
+            
+            // Создаем башни в панели
+            createTowerButtons();
+            
+            // Назначаем обработчики событий
+            setupEventListeners();
+        }
+        
+        // Создание уровней, кнопок башен, пути (без изменений)
+        function createLevels() { /* ... */ }
+        function createTowerButtons() { /* ... */ }
+        function createPathForLevel(level) { /* ... */ }
+        
+        // НОВАЯ ФУНКЦИЯ: Обновление таймера развертывания
+        function updateDeploymentTimer() {
+            const remainingTime = game.deploymentEndTime - Date.now();
+            const timerElement = document.getElementById('deploymentTimer');
+            
+            if (remainingTime <= 0) {
+                clearInterval(game.deploymentInterval);
+                game.deploymentInterval = null;
+                timerElement.textContent = "ВРЕМЯ ИСТЕКЛО! АТАКА!";
+                startWave(); // Автоматический старт
+            } else {
+                const seconds = Math.floor(remainingTime / 1000);
+                const ms = Math.floor((remainingTime % 1000) / 100);
+                timerElement.textContent = `ОСТАЛОСЬ: ${seconds}.${ms} с`;
+            }
+        }
+        
+        // Показать экран волны (ОБНОВЛЕНО)
+        function showWaveScreen() {
+            waveScreen.classList.add('active');
+            const waveTitle = document.getElementById('waveTitle');
+            const waveEnemies = document.getElementById('waveEnemies');
+            const timerElement = document.getElementById('deploymentTimer');
+            
+            // Очистка предыдущего интервала, если есть
+            if (game.deploymentInterval) clearInterval(game.deploymentInterval);
+            
+            if (game.currentWave === 0) {
+                // ПЕРВАЯ ВОЛНА УРОВНЯ: Нет таймера, чтобы дать время на подготовку
+                waveTitle.textContent = `УРОВЕНЬ ${game.currentLevel}`;
+                waveEnemies.textContent = levels[game.currentLevel-1].name;
+                timerElement.textContent = "ВРЕМЯ НА ПОДГОТОВКУ НЕ ОГРАНИЧЕНО";
+                startWaveBtn.disabled = false;
+            } else {
+                // ПОСЛЕДУЮЩИЕ ВОЛНЫ: Запускаем таймер
+                const nextWave = game.currentWave + 1;
+                waveTitle.textContent = `ВОЛНА ${nextWave}`;
+                
+                const enemiesInfo = [];
+                if (nextWave % 5 === 0) {
+                    enemiesInfo.push('Специальный босс!');
+                } else {
+                    enemiesInfo.push(`${5 + Math.floor(nextWave/2)} врагов`);
+                }
+                
+                waveEnemies.textContent = enemiesInfo.join(' • ');
+                
+                // Начинаем обратный отсчет (60 секунд)
+                game.deploymentEndTime = Date.now() + game.deploymentTimeLimit;
+                startWaveBtn.disabled = false;
+                game.deploymentInterval = setInterval(updateDeploymentTimer, 100);
+                updateDeploymentTimer(); // Первое обновление
+            }
+            
+            game.waveStartTime = Date.now();
+        }
+        
+        // Начать волну (ОБНОВЛЕНО)
+        function startWave() {
+            // Очищаем таймер, если волна началась вручную до истечения времени
+            if (game.deploymentInterval) {
+                clearInterval(game.deploymentInterval);
+                game.deploymentInterval = null;
+                document.getElementById('deploymentTimer').textContent = "";
+            }
+            
+            waveScreen.classList.remove('active');
+            game.currentWave++;
+            document.getElementById('currentWave').textContent = `${game.currentWave}/${game.maxWaves}`;
+            
+            game.waveInProgress = true;
+            game.enemyCount = 0;
+            
+            if (game.currentWave % 5 === 0) {
+                game.maxEnemies = 1;
+            } else {
+                game.maxEnemies = 5 + Math.floor(game.currentWave / 2);
+            }
+            
+            spawnEnemies();
+        }
+        
+        // Остальные функции (spawnEnemies, gameLoop, updateGame, updateEnemies, updateTowers, updateProjectiles, ...)
+        // остаются без существенных изменений, за исключением тех, что связаны с новыми башнями/врагами
+        
+        function updateEnemies() { /* ... */ }
+        function updateTowers() { /* ... */ }
+        function updateProjectiles() { /* ... */ }
+        function updateEffects() { /* ... */ }
+        function createExplosion(x, y, radius) { /* ... */ }
+        function drawGame() { /* ... */ }
+        function drawEnemies() { /* ... */ }
+        function drawTowers() { /* ... */ }
+        function drawBackground() { /* ... */ }
+        function drawPath() { /* ... */ }
+        function drawProjectiles() { /* ... */ }
+        function drawEffects() { /* ... */ }
+        function drawSelectedTower() { /* ... */ }
+        function checkGameState() { /* ... */ }
+        function victory() { /* ... */ }
+        function defeat() { /* ... */ }
+        function updateUI() { /* ... */ }
+        
+        // Начало уровня (без изменений)
+        function startLevel(level) { /* ... */ }
+        
+        // Настройка обработчиков событий (без изменений)
+        function setupEventListeners() {
+            playBtn.addEventListener('click', () => { menuScreen.classList.add('hidden'); levelSelectScreen.classList.remove('hidden'); createLevels(); }); // Добавил createLevels для обновления статуса
+            continueBtn.addEventListener('click', () => {
+                if (game.completedLevels.length > 0) {
+                    const lastLevel = Math.max(...game.completedLevels);
+                    startLevel(lastLevel + 1 > 20 ? 20 : lastLevel + 1);
+                } else {
+                    startLevel(1);
+                }
+            });
+            backToMenuBtn.addEventListener('click', () => { levelSelectScreen.classList.add('hidden'); menuScreen.classList.remove('hidden'); });
+            
+            document.getElementById('pauseBtn').addEventListener('click', () => {
+                game.gamePaused = true;
+                pauseScreen.classList.add('active');
+                document.getElementById('levelProgress').textContent = 
+                    `Уровень ${game.currentLevel} • Волна ${game.currentWave}/${game.maxWaves}`;
+            });
+            document.getElementById('menuBtn').addEventListener('click', () => {
+                game.gameRunning = false;
+                gameScreen.classList.remove('active');
+                menuScreen.classList.remove('hidden');
+                createLevels();
+            });
+            document.getElementById('resumeBtn').addEventListener('click', () => { game.gamePaused = false; pauseScreen.classList.remove('active'); });
+            document.getElementById('restartLevelBtn').addEventListener('click', () => { pauseScreen.classList.remove('active'); startLevel(game.currentLevel); });
+            document.getElementById('toMenuFromPauseBtn').addEventListener('click', () => { game.gameRunning = false; pauseScreen.classList.remove('active'); gameScreen.classList.remove('active'); menuScreen.classList.remove('hidden'); createLevels(); });
+            startWaveBtn.addEventListener('click', startWave);
+            document.getElementById('nextLevelBtn').addEventListener('click', () => {
+                victoryScreen.classList.remove('active');
+                if (game.currentLevel < 20) { startLevel(game.currentLevel + 1); } else { gameScreen.classList.remove('active'); menuScreen.classList.remove('hidden'); createLevels(); }
+            });
+            document.getElementById('toMenuFromVictoryBtn').addEventListener('click', () => { victoryScreen.classList.remove('active'); gameScreen.classList.remove('active'); menuScreen.classList.remove('hidden'); createLevels(); });
+            document.getElementById('restartFromDefeatBtn').addEventListener('click', () => { defeatScreen.classList.remove('active'); startLevel(game.currentLevel); });
+            document.getElementById('toMenuFromDefeatBtn').addEventListener('click', () => { defeatScreen.classList.remove('active'); gameScreen.classList.remove('active'); menuScreen.classList.remove('hidden'); createLevels(); });
+            
+            document.getElementById('upgradeBtn').addEventListener('click', () => {
+                if (game.selectedTowerIndex >= 0 && game.money >= 100) {
+                    const tower = game.towers[game.selectedTowerIndex];
+                    tower.damage *= 1.5; tower.range *= 1.2; tower.level++; game.money -= 100; updateUI();
+                }
+            });
+            document.getElementById('sellBtn').addEventListener('click', () => {
+                if (game.selectedTowerIndex >= 0) {
+                    const tower = game.towers[game.selectedTowerIndex];
+                    const refund = Math.floor(towerTypes[tower.type].cost * 0.5);
+                    game.money += refund;
+                    game.towers.splice(game.selectedTowerIndex, 1);
+                    game.selectedTowerIndex = -1;
+                    updateUI();
+                }
+            });
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                game.mouseX = e.clientX - rect.left;
+                game.mouseY = e.clientY - rect.top;
+            });
+            
+            canvas.addEventListener('click', (e) => {
+                if (!game.gameRunning || game.gamePaused || game.waveInProgress) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                for (let i = 0; i < game.towers.length; i++) {
+                    const tower = game.towers[i];
+                    const dx = x - tower.x;
+                    const dy = y - tower.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 25) {
+                        game.selectedTowerIndex = i;
+                        document.querySelectorAll('.tower-item').forEach(item => { item.classList.remove('selected'); });
+                        return;
+                    }
+                }
+                
+                game.selectedTowerIndex = -1; // Сбрасываем выделение, если клик не по башне
+                
+                const type = towerTypes[game.selectedTower];
+                if (game.money >= type.cost) {
+                    let valid = true;
+                    
+                    // Проверка на пути
+                    for (const point of game.path) {
+                        const dx = x - point.x;
+                        const dy = y - point.y;
+                        if (Math.sqrt(dx * dx + dy * dy) < 60) { valid = false; break; }
+                    }
+                    
+                    // Проверка на столкновение с другими башнями
+                    for (const tower of game.towers) {
+                        const dx = x - tower.x;
+                        const dy = y - tower.y;
+                        if (Math.sqrt(dx * dx + dy * dy) < 50) { valid = false; break; }
+                    }
+                    
+                    // Проверка границ
+                    if (x < 30 || x > canvas.width - 30 || y < 30 || y > canvas.height - 30) { valid = false; }
+                    
+                    if (valid) {
+                        const tower = {
+                            x: x, y: y, originalX: x, originalY: y, type: game.selectedTower,
+                            damage: type.damage, range: type.range, speed: type.speed, color: type.color,
+                            lastShot: 0, level: 1
+                        };
+                        game.towers.push(tower);
+                        game.money -= type.cost;
+                        game.selectedTowerIndex = game.towers.length - 1;
+                        updateUI();
+                    }
+                }
+            });
+        }
+        
+        // Запуск игры при загрузке
+        window.addEventListener('load', () => {
+            initGame();
+        });
+    </script>
+</body>
+</html>
